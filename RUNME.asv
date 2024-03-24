@@ -3,14 +3,29 @@ close all; clear all; clc;
 lambda = 632.8e-9; %wavelength
 cp = 5.2e-6;          %pixel pitch
 k = 2*pi/lambda;      %wavenumber             
+
+num = 5;              %number of images
+
+root='D:\Darkroom\Joshua\mainlatest\'; % Hi sir palitan niyo lang po yung 
+%'D:\Darkroom\Joshua\' to directory ng folder niyo
+%% dz=3mm data
+root_from = [root 'FRCV\exp_data\u'];     %file root to get images
+firstplane=16         % First plane used
 z0 = 44e-3;             %distance between object and first plane (experimental data)
 dz = 3e-3;             %distance between measurement planes (experimental)
-num = 5;              %number of images
-firstplane=16
 z0=z0+dz*(firstplane-1);
-root='D:\Darkroom\Joshua\mainlatest\';
-root_from = [root 'FRCV\exp_data\u'];     %file root to get images
-root_to1 = [root 'FRCV-results\AS'];
+
+
+%% dz=12mm data
+% firstplane=1         % First plane used
+% root_from = [root 'FRCV\exp_data\exp_data12mm' num2str(firstplane) '\u'];     %file root to get images
+% z0 = 44e-3; %z0 if first plane is 1
+% z0=z0+dz*(firstplane-1); % z0 based on the first plane            
+% dz = 12e-3;             %distance between measurement planes (experimental)
+
+
+
+root_to1 = [root 'FRCV-results\AS']; % Folders ng pagsave ng reconstructed images(DON'T EDIT)
 root_to2 = [root 'FRCV-results\TF'];
 root_to3 = [root 'FRCV-results\IR']; % Proposed method
 ftype = '.bmp';       %file type
@@ -109,26 +124,26 @@ subplot(212),imshow(mat2gray(phFB3)),axis image; colormap(gray(255)); title('IR'
 % subplot 223, imshow(mat2gray(ampASC));  axis image; colormap(gray(255)); title('AMP: SBMIR ASC');
 % subplot 224, imshow(mat2gray(phASC));  axis image; title('PH: SBMIR ASC');
 % 
-% figure(2),hold on
-% plot(2:length(mse_amp_fb),mse_amp_fb(2:length(mse_amp_fb)), ...
-%     'b','Marker','o','Linewidth',2,'LineStyle','-');
-% plot(2:length(mse_amp_ASC),mse_amp_ASC(2:length(mse_amp_ASC)), ...
-%     'r','Marker','*','LineStyle','--')
-% set(gca,'FontSize',28);
-% xlabel('Iteration','FontSize',28), ylabel('Amplitude MSE','FontSize',28), xlim([0,iter]); 
-% % ylim([min(mse_amp_ASC(2:length(mse_amp_ASC))),max(mse_amp_fb)])
-% legend('SBMIR','SBMIR-ASC','Location', 'NorthEast','Orientation','vertical'); 
-% % % saveas(gcf, [root_to,'\AMSEplot_iter=',num2str(iter),'_num=',num2str(num),'.png']); %save figure
-% 
-% figure(3),hold on
-% plot(2:length(mse_ph_fb),mse_ph_fb(2:length(mse_ph_fb)), ...
-%     'b','Marker','o','Linewidth',2,'LineStyle','-');
-% plot(2:length(mse_ph_ASC),mse_ph_ASC(2:length(mse_ph_ASC)), ...
-%     'r','Marker','*','LineStyle','--')
-% set(gca,'FontSize',28);
-% xlabel('Iteration','FontSize',28), ylabel('Phase MSE','FontSize',28), xlim([0,iter]); 
-% % ylim([min(mse_ph_ASC(2:length(mse_ph_ASC))),max(mse_ph_ASC)])
-% legend('SBMIR','SBMIR-ASC','Location', 'NorthEast','Orientation','vertical'); 
+figure(2),hold on
+plot(2:length(mse_amp_fb),mse_amp_fb(2:length(mse_amp_fb)), ...
+    'b','Marker','o','Linewidth',2,'LineStyle','-');
+plot(2:length(mse_amp_fb3),mse_amp_fb3(2:length(mse_amp_fb3)), ...
+    'r','Marker','*','LineStyle','--')
+set(gca,'FontSize',28);
+xlabel('Iteration','FontSize',28), ylabel('Amplitude MSE','FontSize',28), xlim([0,iter]); 
+% ylim([min(mse_amp_ASC(2:length(mse_amp_ASC))),max(mse_amp_fb)])
+legend('SBMIR','SBMIR-ASC','Location', 'NorthEast','Orientation','vertical'); 
+% % saveas(gcf, [root_to,'\AMSEplot_iter=',num2str(iter),'_num=',num2str(num),'.png']); %save figure
+
+figure(3),hold on
+plot(2:length(mse_ph_fb),mse_ph_fb(2:length(mse_ph_fb)), ...
+    'b','Marker','o','Linewidth',2,'LineStyle','-');
+plot(2:length(mse_ph_ASC),mse_ph_ASC(2:length(mse_ph_ASC)), ...
+    'r','Marker','*','LineStyle','--')
+set(gca,'FontSize',28);
+xlabel('Iteration','FontSize',28), ylabel('Phase MSE','FontSize',28), xlim([0,iter]); 
+% ylim([min(mse_ph_ASC(2:length(mse_ph_ASC))),max(mse_ph_ASC)])
+legend('SBMIR','SBMIR-ASC','Location', 'NorthEast','Orientation','vertical'); 
 % clear all; close all;
 
 resultroot='D:\Darkroom\Joshua\mainlatest\FRCV-results\';
@@ -153,7 +168,14 @@ imgarray(:,:,3)=double(imread([resultroot AS3]));
 imgarray(:,:,4)=double(imread([resultroot IR1]));
 imgarray(:,:,5)=double(imread([resultroot IR2]));
 imgarray(:,:,6)=double(imread([resultroot IR3]));
-figure(1)
+rawr=[170,10,50];
+figure(3)
 for i=1:6
     subplot(2,3,i), imagesc(imgarray(:,:,i)), axis image; axis off; colormap(gray(255));
+    if i<4
+        title(['AS iter' num2str(rawr(mod(i,3)+1))])
+    end
+    if i>3
+        title(['IR iter' num2str(rawr(mod(i,3)+1))])
+    end
 end
