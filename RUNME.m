@@ -10,20 +10,20 @@ num = 5;              %number of images
 root='D:\Darkroom\Joshua\mainlatest\'; % <--- PAPALITAN TO
 %% dz=3mm data
 % root_from = [root 'FRCV\exp_data\u'];     %file root to get images
-% firstplane=16         % First plane used
+% firstplane=4         % First plane used
 % z0 = 44e-3;             % first plane distance of the original data
 % dz = 3e-3;             %distance between measurement planes (experimental)
 % z0=z0+dz*(firstplane-1); % ADJUSTED first plane distance depending on selected firstplane
-
+% % dz=dz*1.10;              % Adding error to the measurement plane distances
 
 %% dz=12mm data
-firstplane=4         % First plane used
+firstplane=1         % First plane used
 root_from = [root 'FRCV\exp_data\exp_data12mm' num2str(firstplane) '\u'];     %file root to get images
 z0 = 44e-3; %z0 if first plane is 1
 dz=3e-3;       % Default dz
 z0=z0+dz*(firstplane-1); % z0 based on the first plane            
 dz = 12e-3;             %distance between measurement planes (experimental)
-
+dz=dz*1.05 %Adding error to the measurement plane distances
 
 %% Folders for reconstructced images(Don't edit)
 root_to1 = [root 'FRCV-results\AS']; % RS Convolution method
@@ -51,13 +51,13 @@ amps = sqrt(uu); %calculate the amplitude from intensity(Input ng SBMIR)
 %smoothing function for display
 smth = @(ph,n) atan2(conv2(sin(ph),ones(n)/2,'same'),conv2(cos(ph),ones(n)/2,'same'));
 
-iter = 170; %set the number of iterations
+iter = 500; %set the number of iterations(CHOOSE DIVISIBLE BY 4)
 
 load r2; % load a guess phase (better for experimental data)
-phase = padarray(phase, [arrysize/2-512/2 arrysize/2-512/2], 'both'); 
+guessphase = padarray(phase, [arrysize/2-512/2 arrysize/2-512/2], 'both'); 
 
 %% SBMIR
-[u_rec_sbmir,tFB,mse_amp_fb,mse_ph_fb] = sbmir(lambda,cp,dz,z0,num,iter,amps,phase,root_to1,'as'); % execute sbmir
+[u_rec_sbmir,tFB,mse_amp_fb,mse_ph_fb] = sbmir(lambda,cp,dz,z0,num,iter,amps,guessphase,root_to1,'as'); % execute sbmir
 disp(['ASM: Iterations: ',num2str(length(mse_amp_fb)-1), ...
     ' ; time: ',num2str(tFB), ' s']); %display execution time
 
@@ -81,7 +81,7 @@ phFB = crp(smth(phFB,10),[arrysize/2 arrysize/2],600);
 % ampFB2 = crp(ampFB2,[arrysize/2 arrysize/2],600); 
 % phFB2 = crp(smth(phFB2,10),[arrysize/2 arrysize/2],600); 
 %% IR
-[u_rec_sbmir3,tFB3,mse_amp_fb3,mse_ph_fb3] = sbmir_fc(lambda,cp,dz,z0,num,iter/2,amps,phase,root_to3,'ir'); % execute sbmir
+[u_rec_sbmir3,tFB3,mse_amp_fb3,mse_ph_fb3] = sbmir_fc(lambda,cp,dz,z0,num,iter/2,amps,guessphase,root_to3,'ir'); % execute sbmir
 disp(['IR: Iterations: ',num2str(length(mse_amp_fb3)-1), ...
     ' ; time: ',num2str(tFB3), ' s']); %display execution time
 
@@ -141,15 +141,15 @@ resultroot=[root 'FRCV-results\'];
 
 imgarray=zeros([600,600,6]); %Empty array
 
-AS1='AS\PhFB_num=5_iter=10.bmp';
-AS2='AS\PhFB_num=5_iter=50.bmp';
-AS3='AS\PhFB_num=5_iter=170.bmp';
+AS1='AS\PhFB_num=5_iter=50.bmp';
+AS2=['AS\PhFB_num=5_iter=' num2str(iter/2) '.bmp'];
+AS3=['AS\PhFB_num=5_iter=' num2str(iter) '.bmp'];
 % TF1='TF\PhFB_num=5_iter=10.bmp';
 % TF2='TF\PhFB_num=5_iter=50.bmp';
 % TF3='TF\PhFB_num=5_iter=170.bmp';
-IR1='IR\PhFB_num=5_iter=10.bmp';
-IR2='IR\PhFB_num=5_iter=50.bmp';
-IR3='IR\PhFB_num=5_iter=170.bmp';
+IR1='IR\PhFB_num=5_iter=50.bmp';
+IR2=['IR\PhFB_num=5_iter=' num2str(iter/2) '.bmp'];
+IR3=['IR\PhFB_num=5_iter=' num2str(iter) '.bmp'];
 imgarray(:,:,1)=double(imread([resultroot AS1]));
 imgarray(:,:,2)=double(imread([resultroot AS2]));
 imgarray(:,:,3)=double(imread([resultroot AS3]));
@@ -160,7 +160,7 @@ imgarray(:,:,4)=double(imread([resultroot IR1]));
 imgarray(:,:,5)=double(imread([resultroot IR2]));
 imgarray(:,:,6)=double(imread([resultroot IR3]));
 
-rawr=[170,10,50];
+rawr=[iter,50,iter/2];
 figure(4)
 for i=1:6
     subplot(2,3,i), imagesc(imgarray(:,:,i)), axis image; axis off; colormap(gray(255));
