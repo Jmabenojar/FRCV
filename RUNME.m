@@ -4,26 +4,26 @@ lambda = 632.8e-9; %wavelength
 cp = 5.2e-6;          %pixel pitch
 k = 2*pi/lambda;      %wavenumber             
 
-num = 5;              %number of images
+num = 3;              %number of images
 % Hi sir palitan niyo lang po yung 
 %'D:\Darkroom\Joshua\' to directory ng folder niyo
 root='D:\Darkroom\Joshua\mainlatest\'; % <--- PAPALITAN TO
 %% dz=3mm data
-% root_from = [root 'FRCV\exp_data\u'];     %file root to get images
-% firstplane=4         % First plane used
-% z0 = 44e-3;             % first plane distance of the original data
-% dz = 3e-3;             %distance between measurement planes (experimental)
-% z0=z0+dz*(firstplane-1); % ADJUSTED first plane distance depending on selected firstplane
-% % dz=dz*1.10;              % Adding error to the measurement plane distances
+root_from = [root 'FRCV\exp_data\u'];     %file root to get images
+firstplane=6         % First plane used
+z0 = 44e-3;             % first plane distance of the original data
+dz = 3e-3;             %distance between measurement planes (experimental)
+z0=z0+dz*(firstplane-1); % ADJUSTED first plane distance depending on selected firstplane
+% dz=dz*1.10;              % Adding error to the measurement plane distances
 
 %% dz=12mm data
-firstplane=1         % First plane used
-root_from = [root 'FRCV\exp_data\exp_data12mm' num2str(firstplane) '\u'];     %file root to get images
-z0 = 44e-3; %z0 if first plane is 1
-dz=3e-3;       % Default dz
-z0=z0+dz*(firstplane-1); % z0 based on the first plane            
-dz = 12e-3;             %distance between measurement planes (experimental)
-dz=dz*1.05 %Adding error to the measurement plane distances
+% firstplane=1         % First plane used
+% root_from = [root 'FRCV\exp_data\exp_data12mm' num2str(firstplane) '\u'];     %file root to get images
+% z0 = 44e-3; %z0 if first plane is 1
+% dz=3e-3;       % Default dz
+% z0=z0+dz*(firstplane-1); % z0 based on the first plane            
+% dz = 12e-3;             %distance between measurement planes (experimental)
+% dz=dz*1.05 %Adding error to the measurement plane distances
 
 %% Folders for reconstructced images(Don't edit)
 root_to1 = [root 'FRCV-results\AS']; % RS Convolution method
@@ -40,7 +40,9 @@ uu = zeros(2*floor(arrysize/2),2*floor(arrysize/2),num); %create an empty array 
 for ii = 1:num % Read intensities
    int = (imread([root_from int2str(firstplane+ii-1) ftype])); 
    int = (double(int)); %convert to double precision
-   uu(:,:,ii) = crp(int,centr,arrysize); %comment if cropping is unnecessary
+   int2 = crp(int,centr,arrysize);
+   uu(:,:,ii) = int2; %comment if cropping is unnecessary
+   imwrite(uint8(normalize(int2)),[num2str(ii),'.png']);
    % figure(101); imagesc(uu(:,:,ii)); colormap(gray(255)); axis image;
 end
 amps = sqrt(uu); %calculate the amplitude from intensity(Input ng SBMIR)
@@ -51,7 +53,7 @@ amps = sqrt(uu); %calculate the amplitude from intensity(Input ng SBMIR)
 %smoothing function for display
 smth = @(ph,n) atan2(conv2(sin(ph),ones(n)/2,'same'),conv2(cos(ph),ones(n)/2,'same'));
 
-iter = 500; %set the number of iterations(CHOOSE DIVISIBLE BY 4)
+iter = 50000; %set the number of iterations(CHOOSE DIVISIBLE BY 4)
 
 load r2; % load a guess phase (better for experimental data)
 guessphase = padarray(phase, [arrysize/2-512/2 arrysize/2-512/2], 'both'); 
@@ -81,7 +83,7 @@ phFB = crp(smth(phFB,10),[arrysize/2 arrysize/2],600);
 % ampFB2 = crp(ampFB2,[arrysize/2 arrysize/2],600); 
 % phFB2 = crp(smth(phFB2,10),[arrysize/2 arrysize/2],600); 
 %% IR
-[u_rec_sbmir3,tFB3,mse_amp_fb3,mse_ph_fb3] = sbmir_fc(lambda,cp,dz,z0,num,iter/2,amps,guessphase,root_to3,'ir'); % execute sbmir
+[u_rec_sbmir3,tFB3,mse_amp_fb3,mse_ph_fb3] = sbmir_fc(lambda,cp,dz,z0,num,iter,amps,guessphase,root_to3,'ir'); % execute sbmir
 disp(['IR: Iterations: ',num2str(length(mse_amp_fb3)-1), ...
     ' ; time: ',num2str(tFB3), ' s']); %display execution time
 
@@ -117,7 +119,7 @@ subplot 224, imshow(mat2gray(phFB3));  axis image; title('PH: SBMIR-F');
 figure(2),hold on
 plot(2:length(mse_amp_fb),mse_amp_fb(2:length(mse_amp_fb)), ...
     'b','Marker','o','Linewidth',2,'LineStyle','-');
-plot(2*(2:length(mse_amp_fb3)),mse_amp_fb3(2:length(mse_amp_fb3)), ...
+plot(1*(2:length(mse_amp_fb3)),mse_amp_fb3(2:length(mse_amp_fb3)), ...
     'r','Marker','*','LineStyle','--')
 set(gca,'FontSize',28);
 xlabel('Iteration','FontSize',28), ylabel('Amplitude MSE','FontSize',28), xlim([0,iter]); 
@@ -141,14 +143,14 @@ resultroot=[root 'FRCV-results\'];
 
 imgarray=zeros([600,600,6]); %Empty array
 
-AS1='AS\PhFB_num=5_iter=50.bmp';
-AS2=['AS\PhFB_num=5_iter=' num2str(iter/2) '.bmp'];
-AS3=['AS\PhFB_num=5_iter=' num2str(iter) '.bmp'];
+AS1='AS\Ph_num=5_iter=50.bmp';
+AS2=['AS\Ph_num=5_iter=' num2str(iter) '.bmp'];
+AS3=['AS\Ph_num=5_iter=' num2str(iter) '.bmp'];
 % TF1='TF\PhFB_num=5_iter=10.bmp';
 % TF2='TF\PhFB_num=5_iter=50.bmp';
 % TF3='TF\PhFB_num=5_iter=170.bmp';
 IR1='IR\PhFB_num=5_iter=50.bmp';
-IR2=['IR\PhFB_num=5_iter=' num2str(iter/2) '.bmp'];
+IR2=['IR\PhFB_num=5_iter=' num2str(iter) '.bmp'];
 IR3=['IR\PhFB_num=5_iter=' num2str(iter) '.bmp'];
 imgarray(:,:,1)=double(imread([resultroot AS1]));
 imgarray(:,:,2)=double(imread([resultroot AS2]));

@@ -59,11 +59,12 @@ for iii =1:iter
     mse_ph_fb = [mse_ph_fb;err_ph];
     % u_rec = ifftshift(ifft2(fft2(fftshift(u_rec)).*(St))); %back propagate to object plane
     u_rec=prop(u_rec,lambda,-z0,cp,method);
-%        imwrite(uint8(normalize(abs(u_rec))),[root_to,'\AmpFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
-%        imwrite(uint8(normalize(smth(angle(u_rec),10))),[root_to,'\PhFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
-       % imwrite(uint8(normalize( crp(abs(u_rec),[C/2 R/2],600))),[root_to,'\AmpFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
-    imwrite(uint8(normalize(crp(smth(angle(u_rec),10),[C/2 R/2],600))),[root_to,'\PhFB_num=',num2str(num),'_iter=',num2str(iii*2),'.bmp']);
-    
+    if isreal(iii/1000) && rem(iii/1000,1)==0
+%           imwrite(uint8(normalize(abs(u_rec))),[root_to,'\AmpFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
+%            imwrite(uint8(normalize(smth(angle(u_rec),10))),[root_to,'\PhFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
+        imwrite(uint8(normalize( crp(abs(u_rec),[C/2 R/2],600))),[root_to,'\AmpFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
+        imwrite(uint8(normalize(crp(smth(angle(u_rec),10),[C/2 R/2],600))),[root_to,'\PhFB_num=',num2str(num),'_iter=',num2str(iii),'.bmp']);
+    end
 end
 tFB = toc;
 end
